@@ -20,11 +20,3 @@ Download a Windows x64 package from https://luabinaries.sourceforge.net (e.g. `l
 3. Press **Ctrl+Shift+B**.
 
 Output: `out/bhaptics_wrapper.dll`
-
-## Deploy
-
-Copy both DLLs into your UE4SS mod's `scripts/` folder:
-- `out/bhaptics_wrapper.dll`
-- `lib/bhaptics/bhaptics_library.dll`
-
-Tip: change `<OutDir>` in `bhaptics_wrapper.vcxproj` to point directly at your mod's `scripts/` folder to skip the manual copy step after each build.
