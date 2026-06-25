@@ -109,17 +109,37 @@ static fn_setDeviceVsm              g_setDeviceVsm              = nullptr;
 // ---------------------------------------------------------------------------
 // DLL loader — called once from l_registryAndInit
 // ---------------------------------------------------------------------------
+
+// We need a symbol that belongs to this DLL so GetModuleHandleEx can find it.
+static void _anchor() {}
+
 static std::string LoadBhapticsLibrary()
 {
     if (g_hLib) return "";
 
-    g_hLib = LoadLibraryA("bhaptics_library.dll");
+    // Resolve the full path to bhaptics_library.dll relative to the directory
+    // that bhaptics_wrapper.dll itself lives in. This works on any machine
+    // regardless of working directory or DLL search path ordering.
+    char wrapperPath[MAX_PATH] = {};
+    HMODULE hSelf = nullptr;
+    GetModuleHandleExA(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+        GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        reinterpret_cast<LPCSTR>(&_anchor),
+        &hSelf);
+    GetModuleFileNameA(hSelf, wrapperPath, MAX_PATH);
+
+    // Strip the filename to get just the directory, then append the target name.
+    char* lastSlash = strrchr(wrapperPath, '\\');
+    if (lastSlash) *(lastSlash + 1) = '\0';
+    std::string fullPath = std::string(wrapperPath) + "bhaptics_library.dll";
+
+    g_hLib = LoadLibraryA(fullPath.c_str());
     if (!g_hLib) {
-        char buf[256];
+        char buf[512];
         snprintf(buf, sizeof(buf),
-            "LoadLibrary(\"bhaptics_library.dll\") failed (Windows error %lu). "
-            "Make sure bhaptics_library.dll is in the same scripts/ folder.",
-            GetLastError());
+            "LoadLibrary(\"%s\") failed (Windows error %lu).",
+            fullPath.c_str(), GetLastError());
         return buf;
     }
 
