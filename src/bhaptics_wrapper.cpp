@@ -218,6 +218,14 @@ static std::string LoadBhapticsLibrary()
 // Lua bindings
 // ---------------------------------------------------------------------------
 
+// Convert a C string to lowercase in-place and return it as a std::string.
+static std::string ToLower(const char* s)
+{
+    std::string out(s);
+    for (char& c : out) c = static_cast<char>(tolower(static_cast<unsigned char>(c)));
+    return out;
+}
+
 // bhaptics.registry_and_init(apiKey, workspaceId, initJson)  -> bool [, errmsg]
 // This is the main initialisation call — also triggers DLL loading.
 static int l_registryAndInit(lua_State* L)
@@ -278,7 +286,7 @@ static int l_reInitMessage(lua_State* L)
 static int l_play(lua_State* L)
 {
     REQUIRE_LIB(L) REQUIRE_FN(L, g_play)
-    lua_pushinteger(L, g_play(luaL_checkstring(L, 1)));
+    lua_pushinteger(L, g_play(ToLower(luaL_checkstring(L, 1)).c_str()));
     return 1;
 }
 
@@ -286,8 +294,9 @@ static int l_play(lua_State* L)
 static int l_playParam(lua_State* L)
 {
     REQUIRE_LIB(L) REQUIRE_FN(L, g_playParam)
+    const std::string key_pp = ToLower(luaL_checkstring(L, 1));
     lua_pushinteger(L, g_playParam(
-        luaL_checkstring(L, 1),
+        key_pp.c_str(),
         (int)luaL_optinteger(L, 2, 0),
         (float)luaL_optnumber(L, 3, 1.0),
         (float)luaL_optnumber(L, 4, 1.0),
@@ -300,8 +309,9 @@ static int l_playParam(lua_State* L)
 static int l_playWithoutResult(lua_State* L)
 {
     REQUIRE_LIB(L) REQUIRE_FN(L, g_playWithoutResult)
+    const std::string key_pwr = ToLower(luaL_checkstring(L, 1));
     g_playWithoutResult(
-        luaL_checkstring(L, 1),
+        key_pwr.c_str(),
         (int)luaL_optinteger(L, 2, 0),
         (float)luaL_optnumber(L, 3, 1.0),
         (float)luaL_optnumber(L, 4, 1.0),
@@ -314,8 +324,9 @@ static int l_playWithoutResult(lua_State* L)
 static int l_playWithStartTime(lua_State* L)
 {
     REQUIRE_LIB(L) REQUIRE_FN(L, g_playWithStartTime)
+    const std::string key_pwst = ToLower(luaL_checkstring(L, 1));
     lua_pushinteger(L, g_playWithStartTime(
-        luaL_checkstring(L, 1),
+        key_pwst.c_str(),
         (int)luaL_optinteger(L, 2, 0),
         (int)luaL_optinteger(L, 3, 0),
         (float)luaL_optnumber(L, 4, 1.0),
@@ -399,8 +410,9 @@ static int l_playPath(lua_State* L)
 static int l_playLoop(lua_State* L)
 {
     REQUIRE_LIB(L) REQUIRE_FN(L, g_playLoop)
+    const std::string key_pl = ToLower(luaL_checkstring(L, 1));
     lua_pushinteger(L, g_playLoop(
-        luaL_checkstring(L, 1),
+        key_pl.c_str(),
         (int)luaL_optinteger(L, 2, 0),
         (float)luaL_optnumber(L, 3, 1.0),
         (float)luaL_optnumber(L, 4, 1.0),
